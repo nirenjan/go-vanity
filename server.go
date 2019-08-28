@@ -110,7 +110,7 @@ func (s *Server) handleGeneric(w http.ResponseWriter, r *http.Request) {
 	// Check if we got go-get=1 in the query
 	redirect := func(r *http.Request) bool {
 		get, ok := r.URL.Query()["go-get"]
-		fmt.Printf("%#v %#v\n", ok, get)
+
 		if !ok {
 			// go-get was not in the query
 			// Redirect to the redirect URL
