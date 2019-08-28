@@ -108,10 +108,25 @@ func (s *Server) handleGeneric(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if we got go-get=1 in the query
-	get, ok := r.URL.Query()["go-get"]
-	if !ok || len(get[0]) < 1 || get[0] != "1" {
-		// go-get=1 was not in the query
-		// Redirect to the redirect URL
+	redirect := func(r *http.Request) bool {
+		get, ok := r.URL.Query()["go-get"]
+		fmt.Printf("%#v %#v\n", ok, get)
+		if !ok {
+			// go-get was not in the query
+			// Redirect to the redirect URL
+			return true
+		}
+
+		// Search all the values for a matching one
+		for _, v := range get {
+			if v == "1" {
+				return false
+			}
+		}
+
+		return true
+	}
+	if redirect(r) {
 		http.Redirect(w, r, s.getRedirect(module), http.StatusFound)
 		return
 	}
