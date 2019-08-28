@@ -11,7 +11,7 @@ import (
 // repoBase returns the first segment of the requested URL. It does so
 // by splitting on `/`, and returning the first result.
 func repoBase(url string) string {
-	return strings.Split(url[1:], "/")[0]
+	return strings.Split(strings.TrimPrefix(url, "/"), "/")[0]
 }
 
 // checkUpstream verifies that the package is available on the remote server
