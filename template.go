@@ -13,14 +13,13 @@ func (s *Server) buildTemplate() {
 	const tpl = `<!DOCTYPE html>
 <html>
 <head>
-{{ $host := .VcsHost }}
-{{ $vcs := .VcsType }}
-{{ $redirect := (printf "%s/%s" .Redirect .Pkg) }}
-{{ if ne .Redirect .VcsHost }}
-{{ $redirect = (printf "%s%s" .Redirect .Request) }}
-{{ end }}
+{{- $import := printf "%s/%s %s %s/%s" .Base .Pkg .VcsType .VcsHost .Pkg -}}
+{{- $redirect := (printf "%s/%s" .Redirect .Pkg) -}}
+{{- if ne .Redirect .VcsHost -}}
+{{- $redirect = (printf "%s%s" .Redirect .Request) -}}
+{{- end -}}
 	<meta charset="UTF-8">
-	<meta name="go-import" content="{{.Base}}/{{.Pkg}} {{$vcs}} {{$host}}/{{.Pkg}}">
+	<meta name="go-import" content="{{ $import }}">
 	<meta http-equiv="refresh" content="0;url={{$redirect}}">
 </head>
 </html>`
