@@ -6,10 +6,6 @@ import (
 )
 
 func main() {
-	server := vanity.Server{
-		BaseURL: "nirenjan.org",
-		Repo:    "https://git.nirenjan.com/go/",
-	}
-
+	server, _ := vanity.NewServer("nirenjan.org", "https://git.nirenjan.com/go", "")
 	server.Serve()
 }
