@@ -4,6 +4,7 @@ package vanity
 
 import (
 	"io"
+	"strings"
 	"text/template"
 )
 
@@ -13,14 +14,22 @@ func (s *Server) buildTemplate() {
 	const tpl = `<!DOCTYPE html>
 <html>
 <head>
-{{- $import := printf "%s/%s %s %s/%s" .Base .Pkg .VcsType .VcsHost .Pkg -}}
-{{- $redirect := (printf "%s/%s" .Redirect .Pkg) -}}
+{{- $base := printf "%s/%s" .Base .Pkg -}}
+{{- $host := printf "%s/%s" .VcsHost .Pkg -}}
+{{- $import := printf "%s %s %s" $base .VcsType $host -}}
+{{- $redirect := .Pkg -}}
 {{- if ne .Redirect .VcsHost -}}
-{{- $redirect = (printf "%s%s" .Redirect .Request) -}}
-{{- end -}}
+{{- $redirect = .Request -}}
+{{- end  }}
 	<meta charset="UTF-8">
 	<meta name="go-import" content="{{ $import }}">
-	<meta http-equiv="refresh" content="0;url={{$redirect}}">
+{{- if or .Dir .File -}}
+{{- $dir := (printf "%s/%s" $host .Dir) -}}{{- if not .Dir -}}{{- $dir = "_" -}}{{- end -}}
+{{- $file := (printf "%s/%s" $host .File) -}}{{- if not .File -}}{{- $file = "_" -}}{{- end -}}
+{{- $source := (printf "%s %s %s %s" $base $host $dir $file)  }}
+	<meta name="go-source" content="{{ $source }}">
+{{- end  }}
+	<meta http-equiv="refresh" content="0;url={{.Redirect}}/{{$redirect}}">
 </head>
 </html>`
 
@@ -45,7 +54,7 @@ func (s *Server) serveMeta(w io.Writer, req string) {
 		VcsHost:  s.repo.root,
 		VcsType:  s.repo.vcsType,
 		Redirect: s.redirect,
-		Request:  req,
+		Request:  strings.TrimPrefix(req, "/"),
 		Dir:      s.repo.dirFormat,
 		File:     s.repo.fileFormat,
 	}
