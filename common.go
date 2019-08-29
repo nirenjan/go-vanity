@@ -17,7 +17,7 @@ func repoBase(url string) string {
 // checkUpstream verifies that the package is available on the remote server
 func (s *Server) checkUpstream(module string) (bool, int) {
 	base := repoBase(module)
-	upstream := s.repo.root + "/" + base
+	upstream := s.repo.root + base
 	client := &http.Client{
 		Timeout: time.Second * 5,
 	}
@@ -40,7 +40,7 @@ func (s *Server) checkUpstream(module string) (bool, int) {
 func (s *Server) getRedirect(module string) string {
 	base := repoBase(module)
 	if s.redirect == s.repo.root {
-		return s.repo.root + "/" + base
+		return s.repo.root + base
 	} else {
 		return s.redirect + module
 	}

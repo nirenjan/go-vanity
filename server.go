@@ -20,7 +20,10 @@ func NewServer(base, root, redirect string) (*Server, error) {
 	// Trim any trailing slashes, this will simplify the template
 	// handling later
 	base = strings.TrimSuffix(base, "/")
-	root = strings.TrimSuffix(root, "/")
+	if strings.HasSuffix(root, "/") {
+		// Trim the trailing multiple slashes and add a single /
+		root = strings.TrimSuffix(root, "/") + "/"
+	}
 	redirect = strings.TrimSuffix(redirect, "/")
 
 	if base == "" {

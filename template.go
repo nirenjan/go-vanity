@@ -15,7 +15,7 @@ func (s *Server) buildTemplate() {
 <html>
 <head>
 {{- $base := printf "%s/%s" .Base .Pkg -}}
-{{- $host := printf "%s/%s" .VcsHost .Pkg -}}
+{{- $host := printf "%s%s" .VcsHost .Pkg -}}
 {{- $import := printf "%s %s %s" $base .VcsType $host -}}
 {{- $redirect := .Pkg -}}
 {{- if ne .Redirect .VcsHost -}}
@@ -29,7 +29,7 @@ func (s *Server) buildTemplate() {
 {{- $source := (printf "%s %s %s %s" $base $host $dir $file)  }}
 	<meta name="go-source" content="{{ $source }}">
 {{- end  }}
-	<meta http-equiv="refresh" content="0;url={{.Redirect}}/{{$redirect}}">
+	<meta http-equiv="refresh" content="0;url={{.Redirect}}{{$redirect}}">
 </head>
 </html>`
 

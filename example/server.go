@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	server, _ := vanity.NewServer("nirenjan.org", "https://git.nirenjan.com/go", "")
+	server, _ := vanity.NewServer("nirenjan.org", "https://git.nirenjan.com/go/", "")
 	server.Repo().SetProvider(vanity.Gitea)
 	server.Serve()
 }
