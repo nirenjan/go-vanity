@@ -52,6 +52,10 @@ type Server struct {
 	// listen on IPv4 localhost, eg. ":8080". The default is 2369
 	listenPort uint16
 
+	// root is the location to redirect the request to the root node "/".
+	// This defaults to repo.root, but it may be overridden by RootRedirect
+	rootRedirect string
+
 	// template is used by the server to save the template pointer.
 	// This is used by handleGeneric to return the formatted data.
 	template *template.Template

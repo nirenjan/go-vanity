@@ -39,6 +39,7 @@ func NewServer(base, root, redirect string) (*Server, error) {
 	// Copy the values to the server
 	s.base = base
 	s.repo.SetRoot(root)
+	s.rootRedirect = root
 
 	if redirect == "" {
 		redirect = root
@@ -60,6 +61,11 @@ func NewServer(base, root, redirect string) (*Server, error) {
 // be configured by the application
 func (s *Server) Repo() *Vcs {
 	return &s.repo
+}
+
+// RootRedirect changes the redirect for the `/` endpoint
+func (s *Server) RootRedirect(rr string) {
+	s.rootRedirect = rr
 }
 
 // WebRoot changes the web root for serving the `/.well-known/` folder
@@ -102,6 +108,12 @@ func (s *Server) handleWellKnown(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleGeneric(w http.ResponseWriter, r *http.Request) {
 	// Get the path to the requested image
 	module := r.URL.EscapedPath()
+
+	// If the module is the root node, redirect to the root redirect
+	if module == "/" {
+		http.Redirect(w, r, s.rootRedirect, http.StatusFound)
+		return
+	}
 
 	// Make sure that the upstream exists
 	exists, _ := s.checkUpstream(module)
