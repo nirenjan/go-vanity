@@ -80,11 +80,18 @@ func (s *Server) Listen(port uint16) {
 
 // Serve serves the given vanity name as configured by the *Server object
 func (s *Server) Serve() {
-	http.HandleFunc("/.well-known/", s.handleWellKnown)
-	http.HandleFunc("/", s.handleGeneric)
-
+	m := http.NewServeMux()
 	port := fmt.Sprintf(":%v", s.listenPort)
-	log.Fatal(http.ListenAndServe(port, nil))
+	srv := http.Server{Addr: port, Handler: m}
+
+	m.HandleFunc("/.well-known/", getHandler(s.handleWellKnown))
+	m.HandleFunc("/", getHandler(s.handleGeneric))
+	m.HandleFunc("/shutdown", shutDown(&srv))
+
+	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		log.Fatal(err)
+	}
+	log.Printf("Finished")
 }
 
 // handleWellKnown handles the "/.well-known/" directory and serves files
