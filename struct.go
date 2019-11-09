@@ -2,7 +2,10 @@
 
 package vanity
 
-import "text/template"
+import (
+	"net/http"
+	"text/template"
+)
 
 // Vcs is a configuration structure to configure the version control system
 // provider.
@@ -59,4 +62,8 @@ type Server struct {
 	// template is used by the server to save the template pointer.
 	// This is used by handleGeneric to return the formatted data.
 	template *template.Template
+
+	// httpServer is a reference to the HTTP server, it is used during
+	// initial bringup and final shutdown.
+	httpServer *http.Server
 }

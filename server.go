@@ -82,13 +82,12 @@ func (s *Server) Listen(port uint16) {
 func (s *Server) Serve() {
 	m := http.NewServeMux()
 	port := fmt.Sprintf(":%v", s.listenPort)
-	srv := http.Server{Addr: port, Handler: m}
+	s.httpServer = &http.Server{Addr: port, Handler: m}
 
 	m.HandleFunc("/.well-known/", getHandler(s.handleWellKnown))
 	m.HandleFunc("/", getHandler(s.handleGeneric))
-	m.HandleFunc("/shutdown", shutDown(&srv))
 
-	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+	if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatal(err)
 	}
 	log.Printf("Finished")

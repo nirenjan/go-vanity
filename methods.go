@@ -8,8 +8,6 @@ import (
 	"log"
 	"net/http"
 	"strings"
-
-	"github.com/google/uuid"
 )
 
 var errTemplate *template.Template
@@ -26,18 +24,6 @@ func init() {
 </body>
 </html>
 `))
-}
-
-var shutdownToken string
-
-func init() {
-	id, err := uuid.NewUUID()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	shutdownToken = id.String()
-	log.Printf("Shutdown token: %v\n", shutdownToken)
 }
 
 // methodNotAllowed returns a not allowed response
@@ -70,41 +56,9 @@ func getHandler(h func(http.ResponseWriter, *http.Request)) func(http.ResponseWr
 	}
 }
 
-// unAuthorized returns a 401 error
-func unAuthorized(w http.ResponseWriter, r *http.Request) {
-	tplData := struct {
-		Code    int
-		Message string
-	}{
-		http.StatusUnauthorized,
-		"Unauthorized",
-	}
-
-	var b strings.Builder
-
-	errTemplate.Execute(&b, tplData)
-	http.Error(w, b.String(), http.StatusUnauthorized)
-}
-
-// shutDown shuts down the given HTTP server
-func shutDown(s *http.Server) func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("%v %v", r.Method, r.URL.RawPath)
-		if r.Method != http.MethodPost {
-			methodNotAllowed(w, r)
-			return
-		}
-
-		if auth, ok := r.Header["Shutdown-Token"]; !ok || auth[0] != shutdownToken {
-			unAuthorized(w, r)
-			return
-		}
-
-		w.Write([]byte("OK\n"))
-		go func() {
-			if err := s.Shutdown(context.Background()); err != nil {
-				log.Fatal(err)
-			}
-		}()
+// ShutDown shuts down the HTTP server and gracefully exits
+func (s *Server) ShutDown() {
+	if err := s.httpServer.Shutdown(context.Background()); err != nil {
+		log.Fatal(err)
 	}
 }
