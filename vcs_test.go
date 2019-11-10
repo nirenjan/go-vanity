@@ -32,17 +32,16 @@ func TestSetRoot(t *testing.T) {
 
 func TestSetProvider(t *testing.T) {
 	checks := []struct {
-		provider   VcsProvider
+		provider   string
 		vcsType    string
 		dirFormat  string
 		fileFormat string
 	}{
-		{GitHub, "git", "tree/master{/dir}", "blob/master{/dir}/{file}#L{line}"},
-		{Unknown, "", "", ""},
-		{GitLab, "git", "tree/master{/dir}", "blob/master{/dir}/{file}#L{line}"},
-		{Gitea, "git", "src/master{/dir}", "src/master{/dir}/{file}#L{line}"},
-		{Gogs, "git", "src/master{/dir}", "src/master{/dir}/{file}#L{line}"},
-		{Bitbucket, "git", "src/master{/dir}", "src/master{/dir}/{file}#L{line}"},
+		{"GitHub", "git", "tree/master{/dir}", "blob/master{/dir}/{file}#L{line}"},
+		{"GitLab", "git", "tree/master{/dir}", "blob/master{/dir}/{file}#L{line}"},
+		{"Gitea", "git", "src/master{/dir}", "src/master{/dir}/{file}#L{line}"},
+		{"Gogs", "git", "src/master{/dir}", "src/master{/dir}/{file}#L{line}"},
+		{"Bitbucket", "git", "src/master{/dir}", "src/master{/dir}/{file}#L{line}"},
 	}
 
 	for _, p := range checks {
@@ -67,7 +66,7 @@ func TestSetProviderPanic(t *testing.T) {
 	var vcs Vcs
 
 	defer expectPanic(t, "SetProvider")
-	vcs.SetProvider(VcsProvider(0xFFFF))
+	vcs.SetProvider("unknown")
 }
 
 func TestSetType(t *testing.T) {

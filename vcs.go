@@ -9,19 +9,6 @@ import (
 
 // This file manages the VCS structure
 
-// VcsProvider is an enumeration used to identify known VCS providers
-// such as GitHub, Bitbucket, etc.
-type VcsProvider int
-
-const (
-	Unknown   = (VcsProvider)(iota) // Unknown provider, call SetTemplates directly
-	GitHub                          // Github.com or Github Enterprise
-	GitLab                          // Gitlab.com or Gitlab CE/EE
-	Gitea                           // Gitea
-	Gogs                            // Gogs
-	Bitbucket                       // Bitbucket Cloud or Bitbucket Server
-)
-
 // SetRoot configures the root directory of the hosting provider where the
 // package is hosted.
 func (v *Vcs) SetRoot(r string) {
@@ -29,17 +16,14 @@ func (v *Vcs) SetRoot(r string) {
 }
 
 // SetProvider configures the Vcs structure to use the corresponding provider
-func (v *Vcs) SetProvider(provider VcsProvider) {
-	switch provider {
-	case Unknown:
-		// Do nothing
-
-	case GitHub, GitLab:
+func (v *Vcs) SetProvider(provider string) {
+	switch strings.TrimSpace(strings.ToLower(provider)) {
+	case "github", "gitlab":
 		v.vcsType = "git"
 		v.dirFormat = "tree/master{/dir}"
 		v.fileFormat = "blob/master{/dir}/{file}#L{line}"
 
-	case Bitbucket, Gogs, Gitea:
+	case "bitbucket", "gogs", "gitea":
 		// Default vcsType for Bitbucket is git, since Bitbucket is
 		// sunsetting the mercurial repositories.
 		v.vcsType = "git"
@@ -55,7 +39,7 @@ func (v *Vcs) SetProvider(provider VcsProvider) {
 // It can be one of the following case-insensitive strings:
 // Bazaar, Fossil, Git, Mercurial, Subversion
 func (v *Vcs) SetType(t string) {
-	switch strings.ToLower(t) {
+	switch strings.TrimSpace(strings.ToLower(t)) {
 	case "bazaar":
 		v.vcsType = "bzr"
 
