@@ -45,14 +45,14 @@ func methodNotAllowed(w http.ResponseWriter, r *http.Request) {
 // getHandler restricts requests to use the GET handler
 func getHandler(h func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("%v %v", r.Method, r.URL.RawPath)
 		if r.Method == http.MethodGet {
 			h(w, r)
-			return
+		} else {
+			// Respond with the error message
+			methodNotAllowed(w, r)
 		}
 
-		// Respond with the error message
-		methodNotAllowed(w, r)
+		log.Printf("%v %v", r.Method, r.URL.EscapedPath())
 	}
 }
 

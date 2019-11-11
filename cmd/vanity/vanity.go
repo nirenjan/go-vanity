@@ -80,13 +80,24 @@ func main() {
 		server.Repo().SetType(vcs)
 	}
 
-	log.Println("Starting vanity server")
+	log.Println("Starting vanity server on port", port)
 	log.Println("Base URL:", base)
 	log.Println("Root URL:", root)
-	log.Println("Redirect URL:", redirect)
-	log.Println("Provider:", provider)
-	log.Println("Web root:", web_root)
-	log.Println("Port:", port)
+	if root_redirect != "" {
+		log.Println("Redirect URL:", redirect)
+	}
+
+	if provider != "" {
+		log.Println("Provider:", provider)
+	}
+
+	if vcs != "" {
+		log.Println("VCS Type:", vcs)
+	}
+
+	if web_root != "" {
+		log.Println("Web root:", web_root)
+	}
 
 	// Handle os.Interrupt
 	go func() {
