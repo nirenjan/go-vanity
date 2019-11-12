@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 )
 
 var errTemplate *template.Template
@@ -42,17 +43,32 @@ func methodNotAllowed(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, b.String(), http.StatusMethodNotAllowed)
 }
 
+type loggingResponseWriter struct {
+	http.ResponseWriter
+	statusCode int
+}
+
+func (lrw *loggingResponseWriter) WriteHeader(code int) {
+	lrw.statusCode = code
+	lrw.ResponseWriter.WriteHeader(code)
+}
+
 // getHandler restricts requests to use the GET handler
 func getHandler(h func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		lrw := &loggingResponseWriter{w, http.StatusOK}
+
 		if r.Method == http.MethodGet {
-			h(w, r)
+			h(lrw, r)
 		} else {
 			// Respond with the error message
-			methodNotAllowed(w, r)
+			methodNotAllowed(lrw, r)
 		}
 
-		log.Printf("%v %v", r.Method, r.URL.EscapedPath())
+		t := time.Now()
+		elapsed := t.Sub(start)
+		log.Printf("%v %v -> %d %v", r.Method, r.URL.Path, lrw.statusCode, elapsed)
 	}
 }
 
