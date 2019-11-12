@@ -4,43 +4,17 @@ package vanity
 
 import (
 	"context"
-	"html/template"
 	"log"
 	"net/http"
-	"strings"
 	"time"
 )
 
-var errTemplate *template.Template
-
-func init() {
-	errTemplate = template.Must(template.New("error").Parse(`
-<html>
-<head>
-<title>{{ .Code }} {{ .Message }}</title>
-</head>
-<body bgcolor="white">
-<center><h1>{{ .Code }} {{ .Message }}</h1></center>
-<hr><center>nirenjan.org/vanity</center>
-</body>
-</html>
-`))
-}
-
 // methodNotAllowed returns a not allowed response
 func methodNotAllowed(w http.ResponseWriter, r *http.Request) {
-	tplData := struct {
-		Code    int
-		Message string
-	}{
-		http.StatusMethodNotAllowed,
-		"Method Not Allowed",
-	}
+	code := http.StatusMethodNotAllowed
+	message := http.StatusText(code)
 
-	var b strings.Builder
-
-	errTemplate.Execute(&b, tplData)
-	http.Error(w, b.String(), http.StatusMethodNotAllowed)
+	http.Error(w, message, code)
 }
 
 type loggingResponseWriter struct {

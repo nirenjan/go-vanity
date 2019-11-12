@@ -4,7 +4,7 @@ package vanity
 
 import (
 	"net/http"
-	"text/template"
+	"html/template"
 )
 
 // Vcs is a configuration structure to configure the version control system

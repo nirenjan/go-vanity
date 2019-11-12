@@ -5,7 +5,7 @@ package vanity
 import (
 	"io"
 	"strings"
-	"text/template"
+	"html/template"
 )
 
 // buildTemplate builds the template structure and saves it
