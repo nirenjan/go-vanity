@@ -50,6 +50,7 @@ func NewServer(base, root, redirect string) (*Server, error) {
 	s.repo.SetType("git")
 	s.webRoot = "./"
 	s.listenPort = 2369
+	s.queryRemote = true
 
 	// Set the template
 	s.buildTemplate()
@@ -76,6 +77,14 @@ func (s *Server) WebRoot(wr string) {
 // Listen changes the listening port for the *Server
 func (s *Server) Listen(port uint16) {
 	s.listenPort = port
+}
+
+// QueryRemote controls whether the server should query the remote for
+// existence of the requested repository. By default, this is true, causing
+// the server to return 404 if the remote doesn't exist. However, this can
+// be disabled so that the server always assumes that the remote repo exists.
+func (s *Server) QueryRemote(query bool) {
+	s.queryRemote = query
 }
 
 // Serve serves the given vanity name as configured by the *Server object

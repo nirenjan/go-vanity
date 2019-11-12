@@ -16,6 +16,10 @@ func repoBase(url string) string {
 
 // checkUpstream verifies that the package is available on the remote server
 func (s *Server) checkUpstream(module string) (bool, int) {
+	if !s.queryRemote {
+		return true, http.StatusOK
+	}
+
 	base := repoBase(module)
 	upstream := s.repo.root + base
 	client := &http.Client{

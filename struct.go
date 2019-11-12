@@ -51,6 +51,11 @@ type Server struct {
 	// directory. This is used to conform to RFC 8615.
 	webRoot string
 
+	// queryRemote is a flag that enables checking if the remote repository
+	// exists, and setting it to false will force the server to always return a
+	// 200 or 302 code, even if the repository doesn't exist on the remote.
+	queryRemote bool
+
 	// listenPort is the default port on which to listen to. This will only
 	// listen on IPv4 localhost, eg. ":8080". The default is 2369
 	listenPort uint16

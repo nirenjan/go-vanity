@@ -13,6 +13,7 @@ import (
 // Flags for server
 var base, root, redirect, provider, vcs, root_redirect, web_root string
 var port uint
+var noQueryRemote bool
 
 func validateCommandLine() {
 	if base == "" {
@@ -51,6 +52,7 @@ func main() {
 
 	flag.StringVar(&web_root, "web-root", "", "Directory containing the .well-known folder")
 	flag.UintVar(&port, "port", DefaultPort, "Port to listen for HTTP server")
+	flag.BoolVar(&noQueryRemote, "no-query-remote", false, "Don't query the remote server for repo presence")
 	flag.Parse()
 
 	validateCommandLine()
@@ -80,11 +82,13 @@ func main() {
 		server.Repo().SetType(vcs)
 	}
 
+	server.QueryRemote(!noQueryRemote)
+
 	log.Println("Starting vanity server on port", port)
 	log.Println("Base URL:", base)
 	log.Println("Root URL:", root)
 	if root_redirect != "" {
-		log.Println("Redirect URL:", redirect)
+		log.Println("Redirect URL:", root_redirect)
 	}
 
 	if provider != "" {
@@ -95,6 +99,7 @@ func main() {
 		log.Println("VCS Type:", vcs)
 	}
 
+	log.Println("Query Remote:", !noQueryRemote)
 	if web_root != "" {
 		log.Println("Web root:", web_root)
 	}
