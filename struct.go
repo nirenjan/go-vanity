@@ -3,8 +3,8 @@
 package vanity
 
 import (
-	"net/http"
 	"html/template"
+	"net/http"
 )
 
 // Vcs is a configuration structure to configure the version control system
@@ -71,4 +71,10 @@ type Server struct {
 	// httpServer is a reference to the HTTP server, it is used during
 	// initial bringup and final shutdown.
 	httpServer *http.Server
+
+	// client is a reference to the HTTP client used for querying the
+	// upstream server. A default client is created when the server is
+	// initialized, but it can be swapped with a separate client for
+	// test purposes.
+	client *http.Client
 }

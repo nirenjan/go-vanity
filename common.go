@@ -3,9 +3,9 @@
 package vanity
 
 import (
+	"log"
 	"net/http"
 	"strings"
-	"time"
 )
 
 // repoBase returns the first segment of the requested URL. It does so
@@ -22,14 +22,12 @@ func (s *Server) checkUpstream(module string) (bool, int) {
 
 	base := repoBase(module)
 	upstream := s.repo.root + base
-	client := &http.Client{
-		Timeout: time.Second * 5,
-	}
 
 	// Head will follow up to 10 redirects, so no need to worry about
 	// it here.
-	resp, err := client.Head(upstream)
+	resp, err := s.client.Head(upstream)
 	if err != nil {
+		log.Print(err)
 		return false, http.StatusServiceUnavailable
 	}
 

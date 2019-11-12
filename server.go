@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 // NewServer takes in a base URL to bind the vanity name, the root at which all
@@ -51,6 +52,8 @@ func NewServer(base, root, redirect string) (*Server, error) {
 	s.webRoot = "./"
 	s.listenPort = 2369
 	s.queryRemote = true
+	s.client = new(http.Client)
+	s.client.Timeout = time.Second * 5
 
 	// Set the template
 	s.buildTemplate()
