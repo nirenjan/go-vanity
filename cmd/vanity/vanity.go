@@ -27,18 +27,6 @@ func validateCommandLine() {
 	if port > 65535 {
 		log.Fatal("Invalid port value", port, "(must be < 65536)")
 	}
-
-	// Make sure the web-root directory exist, if it is given
-	if web_root != "" {
-		stat, err := os.Stat(web_root)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		if !stat.Mode().IsDir() {
-			log.Fatal("Web root", web_root, "is not a directory")
-		}
-	}
 }
 
 func main() {
@@ -71,7 +59,9 @@ func main() {
 	}
 
 	if web_root != "" {
-		server.WebRoot(web_root)
+		if err := server.WebRoot(web_root); err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	if provider != "" {

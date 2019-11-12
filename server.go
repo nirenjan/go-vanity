@@ -70,8 +70,18 @@ func (s *Server) RootRedirect(rr string) {
 }
 
 // WebRoot changes the web root for serving the `/.well-known/` folder
-func (s *Server) WebRoot(wr string) {
+func (s *Server) WebRoot(wr string) error {
+	stat, err := os.Stat(wr)
+	if err != nil {
+		return err
+	}
+
+	if !stat.Mode().IsDir() {
+		return fmt.Errorf("Web root %v is not a directory", wr)
+	}
+
 	s.webRoot = wr
+	return nil
 }
 
 // Listen changes the listening port for the *Server
