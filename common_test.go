@@ -54,19 +54,8 @@ func TestGetRedirect(t *testing.T) {
 	}
 }
 
-func TestCheckUpstream(t *testing.T) {
-	checks := []struct {
-		query string
-		ok    bool
-		code  int
-	}{
-		{"/valid", true, http.StatusOK},
-		{"/invalid", false, http.StatusNotFound},
-		{"/timeout", false, http.StatusServiceUnavailable},
-		{"/error", false, http.StatusInternalServerError},
-		{"/loop", false, http.StatusServiceUnavailable},
-	}
-
+func mockServer(t *testing.T) *httptest.Server {
+	t.Helper()
 	mock := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case "/valid":
@@ -89,9 +78,30 @@ func TestCheckUpstream(t *testing.T) {
 	l, _ := net.Listen("tcp", "127.0.0.1:")
 	mock.Listener = l
 	mock.Start()
+	return mock
+}
+
+func mockAddr(server *httptest.Server) string {
+	return "http://" + server.Listener.Addr().String() + "/"
+}
+
+func TestCheckUpstream(t *testing.T) {
+	checks := []struct {
+		query string
+		ok    bool
+		code  int
+	}{
+		{"/valid", true, http.StatusOK},
+		{"/invalid", false, http.StatusNotFound},
+		{"/timeout", false, http.StatusServiceUnavailable},
+		{"/error", false, http.StatusInternalServerError},
+		{"/loop", false, http.StatusServiceUnavailable},
+	}
+
+	mock := mockServer(t)
 	defer mock.Close()
 
-	s, _ := NewServer("base", "http://"+mock.Listener.Addr().String()+"/", "")
+	s, _ := NewServer("base", mockAddr(mock), "")
 	s.client = mock.Client()
 	s.client.Timeout = time.Second / 10
 
