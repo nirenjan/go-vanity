@@ -42,7 +42,11 @@ func getHandler(h func(http.ResponseWriter, *http.Request)) func(http.ResponseWr
 
 		t := time.Now()
 		elapsed := t.Sub(start)
-		log.Printf("%v %v -> %d %v", r.Method, r.URL.Path, lrw.statusCode, elapsed)
+		remote := r.Header.Get("X-Forwarded-For")
+		if remote == "" {
+			remote = r.RemoteAddr
+		}
+		log.Printf("%v \"%v %v %v\" %d %v", remote, r.Method, r.URL.Path, r.Proto, lrw.statusCode, elapsed)
 	}
 }
 
