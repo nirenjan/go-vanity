@@ -16,20 +16,6 @@ var base, root, redirect, provider, vcs, root_redirect, web_root string
 var listen_tcp, listen_unix string
 var noQueryRemote bool
 
-func validateCommandLine() {
-	if base == "" {
-		log.Fatal("Missing Base URL on command line")
-	}
-
-	if root == "" {
-		log.Fatal("Missing Root URL on command line")
-	}
-
-	if listen_tcp != "" && listen_unix != "" {
-		log.Fatal("Conflicting arguments -listen-tcp and -listen-unix")
-	}
-}
-
 func main() {
 	flag.StringVar(&base, "base", "", "Base URL for vanity server (required)")
 	flag.StringVar(&root, "root", "", "Root URL for VCS host (required)")
@@ -44,11 +30,23 @@ func main() {
 	flag.BoolVar(&noQueryRemote, "no-query-remote", false, "Don't query the remote server for repo presence")
 	flag.Parse()
 
-	validateCommandLine()
+	stderr := log.New(os.Stderr, "vanity: ", 0)
+
+	if base == "" {
+		stderr.Fatal("Missing Base URL on command line")
+	}
+
+	if root == "" {
+		stderr.Fatal("Missing Root URL on command line")
+	}
+
+	if listen_tcp != "" && listen_unix != "" {
+		stderr.Fatal("Conflicting arguments -listen-tcp and -listen-unix")
+	}
 
 	server, err := vanity.NewServer(base, root, redirect)
 	if err != nil {
-		log.Fatal(err)
+		stderr.Fatal(err)
 	}
 
 	if root_redirect != "" {
@@ -58,7 +56,7 @@ func main() {
 	if listen_tcp != "" {
 		l, err := net.Listen("tcp", listen_tcp)
 		if err != nil {
-			log.Fatal(err)
+			stderr.Fatal(err)
 		}
 		server.Listen(l)
 	}
@@ -66,7 +64,7 @@ func main() {
 	if listen_unix != "" {
 		l, err := net.Listen("unix", listen_unix)
 		if err != nil {
-			log.Fatal(err)
+			stderr.Fatal(err)
 		}
 		server.Listen(l)
 		defer os.Remove(listen_unix)
@@ -74,16 +72,20 @@ func main() {
 
 	if web_root != "" {
 		if err := server.WebRoot(web_root); err != nil {
-			log.Fatal(err)
+			stderr.Fatal(err)
 		}
 	}
 
 	if provider != "" {
-		server.Repo().SetProvider(provider)
+		if err := server.Repo().SetProvider(provider); err != nil {
+			stderr.Fatal(err)
+		}
 	}
 
 	if vcs != "" {
-		server.Repo().SetType(vcs)
+		if err := server.Repo().SetType(vcs); err != nil {
+			stderr.Fatal(err)
+		}
 	}
 
 	server.QueryRemote(!noQueryRemote)
@@ -96,8 +98,11 @@ func main() {
 	}
 	log.Println("Base URL:", base)
 	log.Println("Root URL:", root)
+	if redirect != "" {
+		log.Println("Redirect to:", redirect)
+	}
 	if root_redirect != "" {
-		log.Println("Redirect URL:", root_redirect)
+		log.Println("Redirect Root:", root_redirect)
 	}
 
 	if provider != "" {

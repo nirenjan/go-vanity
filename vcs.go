@@ -31,7 +31,7 @@ func (v *Vcs) SetProvider(provider string) error {
 		v.fileFormat = "src/master{/dir}/{file}#L{line}"
 
 	default:
-		return fmt.Errorf("Unknown provider %v", v)
+		return fmt.Errorf("Unknown provider %v", provider)
 	}
 
 	return nil
