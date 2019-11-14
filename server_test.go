@@ -108,7 +108,6 @@ func TestRootRedirect(t *testing.T) {
 	s, _ := NewServer("base", "root", "")
 	s.RootRedirect("https://github.com/nirenjan")
 	s.Repo().SetProvider("github")
-	s.Listen(2369)
 	s.QueryRemote(false)
 
 	handler := http.HandlerFunc(s.handleGeneric)

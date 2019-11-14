@@ -4,6 +4,7 @@ package vanity
 
 import (
 	"html/template"
+	"net"
 	"net/http"
 )
 
@@ -56,9 +57,9 @@ type Server struct {
 	// 200 or 302 code, even if the repository doesn't exist on the remote.
 	queryRemote bool
 
-	// listenPort is the default port on which to listen to. This will only
-	// listen on IPv4 localhost, eg. ":8080". The default is 2369
-	listenPort uint16
+	// listener is the port/socket on which to listen to. The default
+	// is tcp:2369
+	listener net.Listener
 
 	// root is the location to redirect the request to the root node "/".
 	// This defaults to repo.root, but it may be overridden by RootRedirect

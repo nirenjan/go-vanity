@@ -5,6 +5,7 @@ package vanity
 import (
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -50,7 +51,13 @@ func NewServer(base, root, redirect string) (*Server, error) {
 	// Set defaults for the new server object
 	s.repo.SetType("git")
 	s.webRoot = "./"
-	s.listenPort = 2369
+
+	var err error
+	s.listener, err = net.Listen("tcp", "127.0.0.1:2369")
+	if err != nil {
+		return nil, err
+	}
+
 	s.queryRemote = true
 	s.client = new(http.Client)
 	s.client.Timeout = time.Second * 5
@@ -87,9 +94,9 @@ func (s *Server) WebRoot(wr string) error {
 	return nil
 }
 
-// Listen changes the listening port for the *Server
-func (s *Server) Listen(port uint16) {
-	s.listenPort = port
+// Listen changes the listening port/socket for the *Server
+func (s *Server) Listen(l net.Listener) {
+	s.listener = l
 }
 
 // QueryRemote controls whether the server should query the remote for
@@ -103,13 +110,12 @@ func (s *Server) QueryRemote(query bool) {
 // Serve serves the given vanity name as configured by the *Server object
 func (s *Server) Serve() {
 	m := http.NewServeMux()
-	port := fmt.Sprintf(":%v", s.listenPort)
-	s.httpServer = &http.Server{Addr: port, Handler: m}
+	s.httpServer = &http.Server{Handler: m}
 
 	m.HandleFunc("/.well-known/", getHandler(s.handleWellKnown))
 	m.HandleFunc("/", getHandler(s.handleGeneric))
 
-	if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+	if err := s.httpServer.Serve(s.listener); err != nil && err != http.ErrServerClosed {
 		log.Fatal(err)
 	}
 	log.Printf("Finished")

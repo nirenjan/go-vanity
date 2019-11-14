@@ -3,6 +3,7 @@ package main // import nirenjan.org/vanity/cmd/vanity
 import (
 	"flag"
 	"log"
+	"net"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,7 +13,7 @@ import (
 
 // Flags for server
 var base, root, redirect, provider, vcs, root_redirect, web_root string
-var port uint
+var listen_tcp, listen_unix string
 var noQueryRemote bool
 
 func validateCommandLine() {
@@ -24,13 +25,12 @@ func validateCommandLine() {
 		log.Fatal("Missing Root URL on command line")
 	}
 
-	if port > 65535 {
-		log.Fatal("Invalid port value", port, "(must be < 65536)")
+	if listen_tcp != "" && listen_unix != "" {
+		log.Fatal("Conflicting arguments -listen-tcp and -listen-unix")
 	}
 }
 
 func main() {
-	const DefaultPort uint = 2369
 	flag.StringVar(&base, "base", "", "Base URL for vanity server (required)")
 	flag.StringVar(&root, "root", "", "Root URL for VCS host (required)")
 	flag.StringVar(&redirect, "redirect", "", "Redirect URL for browsers")
@@ -39,7 +39,8 @@ func main() {
 	flag.StringVar(&root_redirect, "root-redirect", "", "Redirect for requests to base URL")
 
 	flag.StringVar(&web_root, "web-root", "", "Directory containing the .well-known folder")
-	flag.UintVar(&port, "port", DefaultPort, "Port to listen for HTTP server")
+	flag.StringVar(&listen_tcp, "listen-tcp", "", "Port to listen on for HTTP server")
+	flag.StringVar(&listen_unix, "listen-unix", "", "Socket to listen on for HTTP server")
 	flag.BoolVar(&noQueryRemote, "no-query-remote", false, "Don't query the remote server for repo presence")
 	flag.Parse()
 
@@ -54,8 +55,20 @@ func main() {
 		server.RootRedirect(root_redirect)
 	}
 
-	if port != DefaultPort {
-		server.Listen(uint16(port))
+	if listen_tcp != "" {
+		l, err := net.Listen("tcp", listen_tcp)
+		if err != nil {
+			log.Fatal(err)
+		}
+		server.Listen(l)
+	}
+
+	if listen_unix != "" {
+		l, err := net.Listen("unix", listen_unix)
+		if err != nil {
+			log.Fatal(err)
+		}
+		server.Listen(l)
 	}
 
 	if web_root != "" {
@@ -74,7 +87,12 @@ func main() {
 
 	server.QueryRemote(!noQueryRemote)
 
-	log.Println("Starting vanity server on port", port)
+	log.Println("Starting vanity server")
+	if listen_tcp != "" {
+		log.Println("Listening on", listen_tcp)
+	} else if listen_unix != "" {
+		log.Println("Listening on", listen_unix)
+	}
 	log.Println("Base URL:", base)
 	log.Println("Root URL:", root)
 	if root_redirect != "" {
