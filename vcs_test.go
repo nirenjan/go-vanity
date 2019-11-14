@@ -6,12 +6,6 @@ import (
 	"testing"
 )
 
-func expectPanic(t *testing.T, f string) {
-	if r := recover(); r == nil {
-		t.Errorf("Function %#v did not panic", f)
-	}
-}
-
 func TestSetRoot(t *testing.T) {
 	checks := []string{
 		"https://github.com/nirenjan/",
@@ -46,7 +40,11 @@ func TestSetProvider(t *testing.T) {
 
 	for _, p := range checks {
 		var vcs Vcs
-		vcs.SetProvider(p.provider)
+		err := vcs.SetProvider(p.provider)
+
+		if err != nil {
+			t.Errorf("Expected nil, got error %v", err)
+		}
 
 		if p.vcsType != vcs.vcsType {
 			t.Errorf("Mismatch in Vcs.vcsType, expected %#v, got %#v", p.vcsType, vcs.vcsType)
@@ -62,11 +60,13 @@ func TestSetProvider(t *testing.T) {
 	}
 }
 
-func TestSetProviderPanic(t *testing.T) {
+func TestSetProviderInvalid(t *testing.T) {
 	var vcs Vcs
 
-	defer expectPanic(t, "SetProvider")
-	vcs.SetProvider("unknown")
+	err := vcs.SetProvider("unknown")
+	if err == nil {
+		t.Errorf("Expected error, got nil")
+	}
 }
 
 func TestSetType(t *testing.T) {
@@ -86,7 +86,11 @@ func TestSetType(t *testing.T) {
 	for _, c := range checks {
 		var v Vcs
 
-		v.SetType(c.name)
+		err := v.SetType(c.name)
+
+		if err != nil {
+			t.Errorf("Expected nil, got error %v", err)
+		}
 
 		if c.ident != v.vcsType {
 			t.Errorf("Mismatch in Vcs.vcsType, expected %#v, got %#v", c.ident, v.vcsType)
@@ -94,11 +98,13 @@ func TestSetType(t *testing.T) {
 	}
 }
 
-func TestSetTypePanic(t *testing.T) {
+func TestSetTypeInvalid(t *testing.T) {
 	var vcs Vcs
 
-	defer expectPanic(t, "SetType")
-	vcs.SetType("cvs")
+	err := vcs.SetType("cvs")
+	if err == nil {
+		t.Errorf("Expected error, got nil")
+	}
 }
 
 func TestSetTemplates(t *testing.T) {
@@ -116,7 +122,11 @@ func TestSetTemplates(t *testing.T) {
 	for _, c := range checks {
 		var v Vcs
 
-		v.SetTemplates(c.dir, c.file)
+		err := v.SetTemplates(c.dir, c.file)
+
+		if err != nil {
+			t.Errorf("Expected nil, got error %v", err)
+		}
 
 		if c.dir != v.dirFormat {
 			t.Errorf("Mismatch in Vcs.dirFormat, expected %#v, got %#v", c.dir, v.dirFormat)
@@ -128,9 +138,11 @@ func TestSetTemplates(t *testing.T) {
 	}
 }
 
-func TestSetTemplatesPanic(t *testing.T) {
+func TestSetTemplatesInvalid(t *testing.T) {
 	var vcs Vcs
 
-	defer expectPanic(t, "SetTemplates")
-	vcs.SetTemplates("", "c")
+	err := vcs.SetTemplates("", "c")
+	if err == nil {
+		t.Errorf("Expected error, got nil")
+	}
 }

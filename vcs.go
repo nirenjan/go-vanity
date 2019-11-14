@@ -16,7 +16,7 @@ func (v *Vcs) SetRoot(r string) {
 }
 
 // SetProvider configures the Vcs structure to use the corresponding provider
-func (v *Vcs) SetProvider(provider string) {
+func (v *Vcs) SetProvider(provider string) error {
 	switch strings.TrimSpace(strings.ToLower(provider)) {
 	case "github", "gitlab":
 		v.vcsType = "git"
@@ -31,14 +31,16 @@ func (v *Vcs) SetProvider(provider string) {
 		v.fileFormat = "src/master{/dir}/{file}#L{line}"
 
 	default:
-		panic(fmt.Sprintf("Unknown provider %v", v))
+		return fmt.Errorf("Unknown provider %v", v)
 	}
+
+	return nil
 }
 
 // SetType sets the version control system type.
 // It can be one of the following case-insensitive strings:
 // Bazaar, Fossil, Git, Mercurial, Subversion
-func (v *Vcs) SetType(t string) {
+func (v *Vcs) SetType(t string) error {
 	switch strings.TrimSpace(strings.ToLower(t)) {
 	case "bazaar":
 		v.vcsType = "bzr"
@@ -56,20 +58,24 @@ func (v *Vcs) SetType(t string) {
 		v.vcsType = "svn"
 
 	default:
-		panic(fmt.Sprintf("Unknown VCS type %v", t))
+		return fmt.Errorf("Unknown VCS type %v", t)
 	}
+
+	return nil
 }
 
 // SetTemplates sets the URL templates for the directory and file
 // listings. These are used by godoc to map the identifiers back to
 // the source listings.
-func (v *Vcs) SetTemplates(dir, file string) {
+func (v *Vcs) SetTemplates(dir, file string) error {
 	// Check the file template, if it is not empty, it should
 	// contain at least one instance of {file}.
 	if file != "" && !strings.Contains(file, "{file}") {
-		panic(fmt.Sprintf("Invalid file template %v", file))
+		return fmt.Errorf("Invalid file template %v", file)
 	}
 
 	v.dirFormat = dir
 	v.fileFormat = file
+
+	return nil
 }
