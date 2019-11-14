@@ -69,6 +69,7 @@ func main() {
 			log.Fatal(err)
 		}
 		server.Listen(l)
+		defer os.Remove(listen_unix)
 	}
 
 	if web_root != "" {
@@ -124,5 +125,7 @@ func main() {
 		}
 	}()
 
-	server.Serve()
+	if err := server.Serve(); err != nil {
+		log.Fatal(err)
+	}
 }

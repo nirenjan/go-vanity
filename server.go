@@ -52,12 +52,6 @@ func NewServer(base, root, redirect string) (*Server, error) {
 	s.repo.SetType("git")
 	s.webRoot = "./"
 
-	var err error
-	s.listener, err = net.Listen("tcp", "127.0.0.1:2369")
-	if err != nil {
-		return nil, err
-	}
-
 	s.queryRemote = true
 	s.client = new(http.Client)
 	s.client.Timeout = time.Second * 5
@@ -96,7 +90,13 @@ func (s *Server) WebRoot(wr string) error {
 
 // Listen changes the listening port/socket for the *Server
 func (s *Server) Listen(l net.Listener) {
-	s.listener = l
+	if l != s.listener {
+		if s.listenerInit {
+			s.listener.Close()
+		}
+		s.listener = l
+		s.listenerInit = true
+	}
 }
 
 // QueryRemote controls whether the server should query the remote for
@@ -108,17 +108,27 @@ func (s *Server) QueryRemote(query bool) {
 }
 
 // Serve serves the given vanity name as configured by the *Server object
-func (s *Server) Serve() {
+func (s *Server) Serve() error {
 	m := http.NewServeMux()
 	s.httpServer = &http.Server{Handler: m}
 
 	m.HandleFunc("/.well-known/", getHandler(s.handleWellKnown))
 	m.HandleFunc("/", getHandler(s.handleGeneric))
 
+	if !s.listenerInit {
+		var err error
+		s.listener, err = net.Listen("tcp", "127.0.0.1:2369")
+		if err != nil {
+			return err
+		}
+	}
+
 	if err := s.httpServer.Serve(s.listener); err != nil && err != http.ErrServerClosed {
-		log.Fatal(err)
+		return err
 	}
 	log.Printf("Finished")
+
+	return nil
 }
 
 // handleWellKnown handles the "/.well-known/" directory and serves files

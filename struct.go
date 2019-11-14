@@ -61,6 +61,11 @@ type Server struct {
 	// is tcp:2369
 	listener net.Listener
 
+	// listenerInit is a flag that indicates if the listener has been
+	// initialized. It is used when the user has not created a custom
+	// listener, and the server must fallback to the default listener.
+	listenerInit bool
+
 	// root is the location to redirect the request to the root node "/".
 	// This defaults to repo.root, but it may be overridden by RootRedirect
 	rootRedirect string
