@@ -15,10 +15,17 @@ import (
 
 // NewServer takes in a base URL to bind the vanity name, the root at which all
 // packages are hosted, and an optional redirect value to redirect web
-// browsers. If redirect is empty, then the value of root is used as the
-// redirect value. This returns a *Server which is used to configure and serve
-// the repository.
+// browsers. It is the same calling NewServerWithFlags with Default flags.
 func NewServer(base, root, redirect string) (*Server, error) {
+	return NewServerWithFlags(base, root, redirect, DefaultFlags)
+}
+
+// NewServerWithFlags takes in a base URL to bind the vanity name, the root at
+// which all packages are hosted, an optional redirect value to redirect web
+// browsers, and flags to control server behavior. If redirect is empty, then
+// the value of root is used as the redirect value. This returns a *Server
+// which is used to configure and serve the repository.
+func NewServerWithFlags(base, root, redirect string, flags Flag) (*Server, error) {
 	// Trim any trailing slashes, this will simplify the template
 	// handling later
 	base = strings.TrimSuffix(base, "/")
@@ -47,12 +54,12 @@ func NewServer(base, root, redirect string) (*Server, error) {
 		redirect = root
 	}
 	s.redirect = redirect
+	s.flags = flags
 
 	// Set defaults for the new server object
 	s.repo.SetType("git")
 	s.webRoot = "./"
 
-	s.queryRemote = true
 	s.client = new(http.Client)
 	s.client.Timeout = time.Second * 5
 
@@ -104,7 +111,11 @@ func (s *Server) Listen(l net.Listener) {
 // the server to return 404 if the remote doesn't exist. However, this can
 // be disabled so that the server always assumes that the remote repo exists.
 func (s *Server) QueryRemote(query bool) {
-	s.queryRemote = query
+	if query {
+		s.flags |= QueryRemote
+	} else {
+		s.flags &= ^QueryRemote
+	}
 }
 
 // Serve serves the given vanity name as configured by the *Server object
@@ -170,6 +181,10 @@ func (s *Server) handleGeneric(w http.ResponseWriter, r *http.Request) {
 
 	// Check if we got go-get=1 in the query
 	redirect := func(r *http.Request) bool {
+		if (s.flags & IgnoreGoGet) != 0 {
+			return false
+		}
+
 		get, ok := r.URL.Query()["go-get"]
 
 		if !ok {

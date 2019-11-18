@@ -52,10 +52,8 @@ type Server struct {
 	// directory. This is used to conform to RFC 8615.
 	webRoot string
 
-	// queryRemote is a flag that enables checking if the remote repository
-	// exists, and setting it to false will force the server to always return a
-	// 200 or 302 code, even if the repository doesn't exist on the remote.
-	queryRemote bool
+	// flags is a bitmask of flags that enable/disable certain behaviors.
+	flags Flag
 
 	// listener is the port/socket on which to listen to. The default
 	// is tcp:2369
@@ -84,3 +82,23 @@ type Server struct {
 	// test purposes.
 	client *http.Client
 }
+
+// Flag is a type for vanity Server configuration flags
+type Flag uint64
+
+const (
+	// QueryRemote controls checking the remote server  if the requested
+	// repository exists or not. If the repository doesn't exist, then return a
+	// 404 error, otherwise return a 200 or 302 code, based on the whether
+	// go-get is provided or not.
+	QueryRemote Flag = (1 << iota)
+
+	// IgnoreGoGet controls whether the server returns a different response
+	// depending on whether go-get=1 appears in the query or not. If the flag
+	// is set, then the server will always return a 200 OK with the meta tags
+	// in the body, otherwise, the server will return a 302 Found with the
+	// specified redirect address when no go-get=1 is found in the request.
+	IgnoreGoGet
+
+	DefaultFlags = (QueryRemote)
+)

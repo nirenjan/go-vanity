@@ -14,7 +14,7 @@ import (
 // Flags for server
 var base, root, redirect, provider, vcs, root_redirect, web_root string
 var listen_tcp, listen_unix string
-var noQueryRemote bool
+var noQueryRemote, ignoreGoGet bool
 
 func main() {
 	flag.StringVar(&base, "base", "", "Base URL for vanity server (required)")
@@ -28,9 +28,11 @@ func main() {
 	flag.StringVar(&listen_tcp, "listen-tcp", "", "Port to listen on for HTTP server")
 	flag.StringVar(&listen_unix, "listen-unix", "", "Socket to listen on for HTTP server")
 	flag.BoolVar(&noQueryRemote, "no-query-remote", false, "Don't query the remote server for repo presence")
+	flag.BoolVar(&ignoreGoGet, "ignore-go-get", false, "Ignore go-get and always return meta tags")
 	flag.Parse()
 
 	stderr := log.New(os.Stderr, "vanity: ", 0)
+	flags := vanity.DefaultFlags
 
 	if base == "" {
 		stderr.Fatal("Missing Base URL on command line")
@@ -44,7 +46,16 @@ func main() {
 		stderr.Fatal("Conflicting arguments -listen-tcp and -listen-unix")
 	}
 
-	server, err := vanity.NewServer(base, root, redirect)
+	if noQueryRemote {
+		flags &= ^vanity.QueryRemote
+	}
+
+	if ignoreGoGet {
+		flags |= vanity.IgnoreGoGet
+	}
+	stderr.Println(flags)
+
+	server, err := vanity.NewServerWithFlags(base, root, redirect, flags)
 	if err != nil {
 		stderr.Fatal(err)
 	}
@@ -88,8 +99,6 @@ func main() {
 		}
 	}
 
-	server.QueryRemote(!noQueryRemote)
-
 	log.Println("Starting vanity server")
 	if listen_tcp != "" {
 		log.Println("Listening on", listen_tcp)
@@ -114,6 +123,7 @@ func main() {
 	}
 
 	log.Println("Query Remote:", !noQueryRemote)
+	log.Println("Ignore go-get:", ignoreGoGet)
 	if web_root != "" {
 		log.Println("Web root:", web_root)
 	}
