@@ -50,6 +50,11 @@ func getHandler(h func(http.ResponseWriter, *http.Request)) func(http.ResponseWr
 	}
 }
 
+// handleRobots returns static content for robots.txt requests
+func handleRobots(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("User-agent: *\nDisallow:\n"))
+}
+
 // ShutDown shuts down the HTTP server and gracefully exits
 func (s *Server) ShutDown() {
 	if err := s.httpServer.Shutdown(context.Background()); err != nil {

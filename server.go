@@ -113,6 +113,8 @@ func (s *Server) Serve() error {
 	s.httpServer = &http.Server{Handler: m}
 
 	m.HandleFunc("/.well-known/", getHandler(s.handleWellKnown))
+	m.HandleFunc("/robots.txt", getHandler(handleRobots))
+	m.HandleFunc("/robots.txt/", getHandler(http.NotFound))
 	m.HandleFunc("/", getHandler(s.handleGeneric))
 
 	if !s.listenerInit {
