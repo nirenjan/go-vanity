@@ -19,7 +19,9 @@ func (s *Server) buildTemplate() {
 {{- $import := printf "%s %s %s" $base .VcsType $host -}}
 {{- $redirect := .Pkg -}}
 {{- if ne .Redirect .VcsHost -}}
-{{- $redirect = .Request -}}
+{{- $redirect = printf "%s%s" .Redirect .Request -}}
+{{- else -}}
+{{- $redirect = printf "%s%s" .Redirect .Pkg -}}
 {{- end  }}
 	<meta charset="UTF-8">
 	<meta name="go-import" content="{{ $import }}">
@@ -29,8 +31,11 @@ func (s *Server) buildTemplate() {
 {{- $source := (printf "%s %s %s %s" $base $host $dir $file)  }}
 	<meta name="go-source" content="{{ $source }}">
 {{- end  }}
-	<meta http-equiv="refresh" content="0;url={{.Redirect}}{{$redirect}}">
+	<meta http-equiv="refresh" content="0;url={{$redirect}}">
 </head>
+<body>
+<p>Redirecting to <a href="{{$redirect}}">{{$redirect}}</a></p>
+</body>
 </html>`
 
 	s.template = template.Must(template.New("vanity").Parse(tpl))
