@@ -2,6 +2,7 @@ Vanity - a tiny handler for Golang package vanity URLs
 ------------------------------------------------------
 
 [![GoDoc](https://godoc.org/nirenjan.org/vanity?status.svg)](https://godoc.org/nirenjan.org/vanity)
+[![pkg.go.dev](https://img.shields.io/badge/pkg.go.dev-reference-00add8?logo=go&logoColor=White)](https://pkg.go.dev/mod/nirenjan.org/vanity)
 
 Vanity is a small server that handles vanity URLs for Golang packages. It
 redirects requests of the form `/xyz` to `https://github.com/<user>/xyz`, as
