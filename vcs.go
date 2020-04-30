@@ -34,6 +34,7 @@ func (v *Vcs) SetProvider(provider string) error {
 		return fmt.Errorf("Unknown provider %v", provider)
 	}
 
+	v.provider = provider
 	return nil
 }
 

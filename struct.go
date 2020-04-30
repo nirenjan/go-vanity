@@ -27,6 +27,9 @@ type Vcs struct {
 	// fileFormat is the URL template for the file at the VCS host.
 	// This is used by godoc to map the identifiers back to the source.
 	fileFormat string
+
+	// provider is the VCS provider platform, e.g. Github.
+	provider string
 }
 
 // Server is a configuration structure to adjust the attributes of the vanity

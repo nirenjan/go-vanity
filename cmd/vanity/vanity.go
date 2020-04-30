@@ -30,93 +30,21 @@ func main() {
 	flag.BoolVar(&noQueryRemote, "no-query-remote", false, "Don't query the remote server for repo presence")
 	flag.Parse()
 
-	stderr := log.New(os.Stderr, "vanity: ", 0)
+	logger := log.New(os.Stderr, "vanity: ", 0)
+	validateArgs(logger)
 
-	if base == "" {
-		stderr.Fatal("Missing Base URL on command line")
-	}
+	server := spawnServer(logger)
+	configureServer(logger, server)
 
-	if root == "" {
-		stderr.Fatal("Missing Root URL on command line")
-	}
-
-	if listenTCP != "" && listenUnix != "" {
-		stderr.Fatal("Conflicting arguments -listen-tcp and -listen-unix")
-	}
-
-	server, err := vanity.NewServer(base, root, redirect)
-	if err != nil {
-		stderr.Fatal(err)
-	}
-
-	if rootRedirect != "" {
-		server.RootRedirect(rootRedirect)
-	}
-
-	if listenTCP != "" {
-		l, err := net.Listen("tcp", listenTCP)
-		if err != nil {
-			stderr.Fatal(err)
-		}
-		server.Listen(l)
-	}
-
-	if listenUnix != "" {
-		l, err := net.Listen("unix", listenUnix)
-		if err != nil {
-			stderr.Fatal(err)
-		}
-		server.Listen(l)
-		defer os.Remove(listenUnix)
-	}
-
-	if webRoot != "" {
-		if err := server.WebRoot(webRoot); err != nil {
-			stderr.Fatal(err)
-		}
-	}
-
-	if provider != "" {
-		if err := server.Repo().SetProvider(provider); err != nil {
-			stderr.Fatal(err)
-		}
-	}
-
-	if vcs != "" {
-		if err := server.Repo().SetType(vcs); err != nil {
-			stderr.Fatal(err)
-		}
-	}
-
-	server.QueryRemote(!noQueryRemote)
-
+	log.SetFlags(0)
 	log.Println("Starting vanity server")
 	if listenTCP != "" {
 		log.Println("Listening on", listenTCP)
 	} else if listenUnix != "" {
 		log.Println("Listening on", listenUnix)
 	}
-	log.Println("Base URL:", base)
-	log.Println("Root URL:", root)
-	if redirect != "" {
-		log.Println("Redirect to:", redirect)
-	}
-	if rootRedirect != "" {
-		log.Println("Redirect Root:", rootRedirect)
-	}
-
-	if provider != "" {
-		log.Println("Provider:", provider)
-	}
-
-	if vcs != "" {
-		log.Println("VCS Type:", vcs)
-	}
-
-	log.Println("Query Remote:", !noQueryRemote)
-	if webRoot != "" {
-		log.Println("Web root:", webRoot)
-	}
+	log.Print(server)
+	log.SetFlags(log.LstdFlags)
 
 	// Handle os.Interrupt
 	go func() {
@@ -126,6 +54,9 @@ func main() {
 
 		select {
 		case <-ch:
+			if listenUnix != "" {
+				os.Remove(listenUnix)
+			}
 			server.ShutDown()
 		}
 	}()
@@ -133,4 +64,70 @@ func main() {
 	if err := server.Serve(); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func validateArgs(logger *log.Logger) {
+	if base == "" {
+		logger.Fatal("Missing Base URL on command line")
+	}
+
+	if root == "" {
+		logger.Fatal("Missing Root URL on command line")
+	}
+
+	if listenTCP != "" && listenUnix != "" {
+		logger.Fatal("Conflicting arguments -listen-tcp and -listen-unix")
+	}
+
+}
+
+func spawnServer(logger *log.Logger) *vanity.Server {
+	server, err := vanity.NewServer(base, root, redirect)
+	if err != nil {
+		logger.Fatal(err)
+	}
+
+	if rootRedirect != "" {
+		server.RootRedirect(rootRedirect)
+	}
+
+	if listenTCP != "" {
+		l, err := net.Listen("tcp", listenTCP)
+		if err != nil {
+			logger.Fatal(err)
+		}
+		server.Listen(l)
+	}
+
+	if listenUnix != "" {
+		l, err := net.Listen("unix", listenUnix)
+		if err != nil {
+			logger.Fatal(err)
+		}
+		server.Listen(l)
+	}
+
+	return server
+}
+
+func configureServer(logger *log.Logger, server *vanity.Server) {
+	if webRoot != "" {
+		if err := server.WebRoot(webRoot); err != nil {
+			logger.Fatal(err)
+		}
+	}
+
+	if provider != "" {
+		if err := server.Repo().SetProvider(provider); err != nil {
+			logger.Fatal(err)
+		}
+	}
+
+	if vcs != "" {
+		if err := server.Repo().SetType(vcs); err != nil {
+			logger.Fatal(err)
+		}
+	}
+
+	server.QueryRemote(!noQueryRemote)
 }

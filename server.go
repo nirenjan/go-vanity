@@ -62,6 +62,25 @@ func NewServer(base, root, redirect string) (*Server, error) {
 	return s, nil
 }
 
+// String returns a string representation of the Server object
+func (s *Server) String() string {
+	out := fmt.Sprintln("Base URL:", s.base)
+	out += fmt.Sprintln("Root URL:", s.repo.root)
+	out += fmt.Sprintln("Redirect to:", s.redirect)
+	out += fmt.Sprintln("Redirect Root:", s.rootRedirect)
+
+	if s.repo.provider != "" {
+		out += fmt.Sprintln("Provider:", s.repo.provider)
+	}
+	out += fmt.Sprintln("VCS Type:", s.repo.vcsType)
+	out += fmt.Sprintln("Query Remote:", s.queryRemote)
+	if s.webRoot != "" {
+		out += fmt.Sprintln("Web root:", s.webRoot)
+	}
+
+	return out
+}
+
 // Repo returns the pointer to the repo Vcs object so that it can
 // be configured by the application
 func (s *Server) Repo() *Vcs {
