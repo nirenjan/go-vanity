@@ -19,10 +19,10 @@ func TestGeneric(t *testing.T) {
 	handler := http.HandlerFunc(s.handleGeneric)
 
 	checks := []struct {
-		repo     string
-		get      bool
-		fake_get bool
-		code     int
+		repo    string
+		get     bool
+		fakeGet bool
+		code    int
 	}{
 		{"valid", true, false, 200},
 		{"valid", true, true, 302},
@@ -42,7 +42,7 @@ func TestGeneric(t *testing.T) {
 	for _, c := range checks {
 		addr := "/" + c.repo
 		if c.get {
-			if c.fake_get {
+			if c.fakeGet {
 				addr += "?go-get=0"
 			} else {
 				addr += "?go-get=1"

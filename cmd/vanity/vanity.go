@@ -12,8 +12,8 @@ import (
 )
 
 // Flags for server
-var base, root, redirect, provider, vcs, root_redirect, web_root string
-var listen_tcp, listen_unix string
+var base, root, redirect, provider, vcs, rootRedirect, webRoot string
+var listenTCP, listenUnix string
 var noQueryRemote bool
 
 func main() {
@@ -22,11 +22,11 @@ func main() {
 	flag.StringVar(&redirect, "redirect", "", "Redirect URL for browsers")
 	flag.StringVar(&provider, "provider", "", "VCS Provider")
 	flag.StringVar(&vcs, "vcs", "", "VCS type (git, subversion, etc.)")
-	flag.StringVar(&root_redirect, "root-redirect", "", "Redirect for requests to base URL")
+	flag.StringVar(&rootRedirect, "root-redirect", "", "Redirect for requests to base URL")
 
-	flag.StringVar(&web_root, "web-root", "", "Directory containing the .well-known folder")
-	flag.StringVar(&listen_tcp, "listen-tcp", "", "Port to listen on for HTTP server")
-	flag.StringVar(&listen_unix, "listen-unix", "", "Socket to listen on for HTTP server")
+	flag.StringVar(&webRoot, "web-root", "", "Directory containing the .well-known folder")
+	flag.StringVar(&listenTCP, "listen-tcp", "", "Port to listen on for HTTP server")
+	flag.StringVar(&listenUnix, "listen-unix", "", "Socket to listen on for HTTP server")
 	flag.BoolVar(&noQueryRemote, "no-query-remote", false, "Don't query the remote server for repo presence")
 	flag.Parse()
 
@@ -40,7 +40,7 @@ func main() {
 		stderr.Fatal("Missing Root URL on command line")
 	}
 
-	if listen_tcp != "" && listen_unix != "" {
+	if listenTCP != "" && listenUnix != "" {
 		stderr.Fatal("Conflicting arguments -listen-tcp and -listen-unix")
 	}
 
@@ -49,29 +49,29 @@ func main() {
 		stderr.Fatal(err)
 	}
 
-	if root_redirect != "" {
-		server.RootRedirect(root_redirect)
+	if rootRedirect != "" {
+		server.RootRedirect(rootRedirect)
 	}
 
-	if listen_tcp != "" {
-		l, err := net.Listen("tcp", listen_tcp)
+	if listenTCP != "" {
+		l, err := net.Listen("tcp", listenTCP)
 		if err != nil {
 			stderr.Fatal(err)
 		}
 		server.Listen(l)
 	}
 
-	if listen_unix != "" {
-		l, err := net.Listen("unix", listen_unix)
+	if listenUnix != "" {
+		l, err := net.Listen("unix", listenUnix)
 		if err != nil {
 			stderr.Fatal(err)
 		}
 		server.Listen(l)
-		defer os.Remove(listen_unix)
+		defer os.Remove(listenUnix)
 	}
 
-	if web_root != "" {
-		if err := server.WebRoot(web_root); err != nil {
+	if webRoot != "" {
+		if err := server.WebRoot(webRoot); err != nil {
 			stderr.Fatal(err)
 		}
 	}
@@ -91,18 +91,18 @@ func main() {
 	server.QueryRemote(!noQueryRemote)
 
 	log.Println("Starting vanity server")
-	if listen_tcp != "" {
-		log.Println("Listening on", listen_tcp)
-	} else if listen_unix != "" {
-		log.Println("Listening on", listen_unix)
+	if listenTCP != "" {
+		log.Println("Listening on", listenTCP)
+	} else if listenUnix != "" {
+		log.Println("Listening on", listenUnix)
 	}
 	log.Println("Base URL:", base)
 	log.Println("Root URL:", root)
 	if redirect != "" {
 		log.Println("Redirect to:", redirect)
 	}
-	if root_redirect != "" {
-		log.Println("Redirect Root:", root_redirect)
+	if rootRedirect != "" {
+		log.Println("Redirect Root:", rootRedirect)
 	}
 
 	if provider != "" {
@@ -114,8 +114,8 @@ func main() {
 	}
 
 	log.Println("Query Remote:", !noQueryRemote)
-	if web_root != "" {
-		log.Println("Web root:", web_root)
+	if webRoot != "" {
+		log.Println("Web root:", webRoot)
 	}
 
 	// Handle os.Interrupt

@@ -43,7 +43,7 @@ func (s *Server) getRedirect(module string) string {
 	base := repoBase(module)
 	if s.redirect == s.repo.root {
 		return s.repo.root + base
-	} else {
-		return s.redirect + module
 	}
+
+	return s.redirect + module
 }
